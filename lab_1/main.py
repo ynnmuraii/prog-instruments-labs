@@ -10,19 +10,19 @@ class Window:
     def __init__(self):
         """ Инициализация рабочего окна """
 
-        """ Инициализация окна """
+        # Инициализация окна
         self.window = Tk()
         self.window.title("2M NotePad")
         width = 800
         height = 600
         view.config_window(self.window, width, height)
 
-        """ Глобальные значения редактора """
+        # Глобальные значения редактора
         self.curr_file = None
         self.pages = []
         self.global_tags = {"align": "left", "finder": 0, "format": 0}
 
-        """ Cоздание меню """
+        # Создание меню
         self.main_menu = Menu(master=self.window)
         view.config_main_menu(self.window, self.main_menu)
         self.file_menu = Menu(master=self.main_menu, tearoff=0)
@@ -30,10 +30,11 @@ class Window:
                               {"Открыть": self.open_file, "Сохранить": self.save_file,
                                "Сохранить как": self.save_file_as, "Удалить": self.delete_file})
 
-        """ Окно настроек """
+        # Окно настроек
         settings_frame = LabelFrame(master=self.window, text="Настройки текста")
         view.place_obj(settings_frame, x=10, y=10, height=height / 6 + 10, width=width - 340)
-        # блок форматирования
+
+        # Блок форматирования
         x = 10
         y = 38
         view.create_label(master=settings_frame, text="Шрифт:", x=x, y=y)
@@ -43,7 +44,8 @@ class Window:
                            x=x + 30, y=y + 22, height=25, width=25)
         view.create_button(master=settings_frame, text="U", command=lambda: self.stylize_text(underline=True),
                            x=x + 60, y=y + 22, height=25, width=25)
-        # блок выравнивания
+        
+        # Блок выравнивания
         x = 120
         y = 38
         view.create_label(master=settings_frame, text="Выравнивание:", x=x, y=y)
@@ -53,7 +55,8 @@ class Window:
                            x=x + 30, y=y + 22, height=25, width=25)
         view.create_button(master=settings_frame, text="R", command=lambda: self.change_align("right"),
                            x=x + 60, y=y + 22, height=25, width=25)
-        # блок undo/redo
+
+        # Блок undo/redo
         x = 230
         y = 38
         view.create_label(master=settings_frame, text="Отмена:", x=x, y=y)
@@ -61,23 +64,26 @@ class Window:
                            x=x, y=y + 22, height=25, width=25)
         view.create_button(master=settings_frame, text="↻", command=lambda: self.redo(),
                            x=x + 30, y=y + 22, height=25, width=25)
-        # блок страниц
+
+        # Блок страниц
         x = 330
         y = 65
         view.create_label(master=settings_frame, text="Страница", x=x, y=y)
         self.page_num = view.get_spinbox(x=x + 80, y=y, width=30,
                                          master=settings_frame, from_=0, to=0,
                                          state="readonly", command=self.change_page)
-        # блок шрифта
+        
+        # Блок шрифта
         self.font_type = view.get_combobox(master=settings_frame,
                                            values=FONTS, state="readonly",
                                            x=10, y=10, current=2)
         self.font_size = view.get_combobox(master=settings_frame, values=list(range(10, 61, 4)),
-                                           x=160, y=10, width=40, current=3, state="readonly",)
+                                           x=160, y=10, width=40, current=3, state="readonly")
         view.create_button(master=settings_frame, text="Применить",
                            command=lambda: self.text.config(font=self.get_font()),
                            x=210, y=10, height=20, width=80)
-        # блок цветов
+
+        # Блок цветов
         x = 330
         y = 10
         view.create_button(master=settings_frame, text="Цвет текста", command=lambda: self.choose_text_color(),
@@ -89,7 +95,7 @@ class Window:
                            x=x, y=y, height=20, width=80)
         self.back_color = view.get_frame(master=settings_frame, bg="#ffffff", x=x + 90, y=y, width=20, height=20)
 
-        """ Окно статистики """
+        # Окно статистики
         info_frame = LabelFrame(master=self.window, text="Параметры текста")
         view.place_obj(info_frame, x=width - 320, y=10, height=height / 6 + 10, width=310)
         view.create_button(master=info_frame, text="Обновить", command=lambda: self.update_stat(),
@@ -108,21 +114,22 @@ class Window:
         view.create_label(master=info_frame, text="Нашлось слов: ", x=165, y=65)
         self.world_counter = view.get_entry(master=info_frame, x=255, y=67, state="readonly", width=25)
 
-        """ Окно ввода текста """
+        # Окно ввода текста
         self.text = Text(master=self.window, undo=True, font=self.get_font(), wrap=WORD)
         view.place_obj(self.text, x=10, y=height / 5 + 10, height=height * 4 / 5 - 40, width=width - 35)
         scroll_text_ver = Scrollbar(master=self.window, orient="vertical", command=self.text.yview)
         view.place_obj(scroll_text_ver, x=775, y=height / 5 + 10, height=height * 4 / 5 - 40)
         self.text["yscrollcommand"] = scroll_text_ver.set
 
-        """ Горячие клавиши """
+        # Горячие клавиши
         view.create_bind(self.text, "<Control-o>", lambda _: self.open_file())
         view.create_bind(self.text, "<Control-s>", lambda _: self.save_file())
         view.create_bind(self.text, "<Control-d>", lambda _: self.delete_file())
 
-        """ Установка стартовых значений """
+        # Установка стартовых значений
         self.change_file_name()
         self.update_stat()
+        
 
     def show(self):
         self.window.mainloop()
