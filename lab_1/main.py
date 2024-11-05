@@ -51,20 +51,20 @@ class Window:
         x = 120
         y = 38
         view.create_label(master=settings_frame, text="Выравнивание:", x=x, y=y)
-        view.create_button(master=settings_frame, text="L", command=lambda: self.change_align("left"),
+        view.create_button(master=settings_frame, text="L", command=lambda: self.change_alignment("left"),
                            x=x, y=y + 22, height=25, width=25)
-        view.create_button(master=settings_frame, text="C", command=lambda: self.change_align("center"),
+        view.create_button(master=settings_frame, text="C", command=lambda: self.change_alignment("center"),
                            x=x + 30, y=y + 22, height=25, width=25)
-        view.create_button(master=settings_frame, text="R", command=lambda: self.change_align("right"),
+        view.create_button(master=settings_frame, text="R", command=lambda: self.change_alignment("right"),
                            x=x + 60, y=y + 22, height=25, width=25)
 
         # Блок undo/redo
         x = 230
         y = 38
         view.create_label(master=settings_frame, text="Отмена:", x=x, y=y)
-        view.create_button(master=settings_frame, text="↺", command=lambda: self.undo(),
+        view.create_button(master=settings_frame, text="↺", command=lambda: self.undo_action(),
                            x=x, y=y + 22, height=25, width=25)
-        view.create_button(master=settings_frame, text="↻", command=lambda: self.redo(),
+        view.create_button(master=settings_frame, text="↻", command=lambda: self.redo_action(),
                            x=x + 30, y=y + 22, height=25, width=25)
 
         # Блок страниц
@@ -83,7 +83,7 @@ class Window:
             master=settings_frame, values=list(range(10, 61, 4)), x=160, y=10, width=40, current=3, state="readonly"
         )
         view.create_button(master=settings_frame, text="Применить",
-                           command=lambda: self.text.config(font=self.get_font()),
+                           command=lambda: self.text.config(font=self.get_font_style()),
                            x=210, y=10, height=20, width=80)
 
         # Блок цветов
@@ -94,14 +94,14 @@ class Window:
         self.text_color = view.get_frame(master=settings_frame, bg="#000000", x=x + 90, y=y, width=20, height=20)
         x = 330
         y = 35
-        view.create_button(master=settings_frame, text="Цвет фона", command=lambda: self.choose_back_color(),
+        view.create_button(master=settings_frame, text="Цвет фона", command=lambda: self.choose_background_color(),
                            x=x, y=y, height=20, width=80)
-        self.back_color = view.get_frame(master=settings_frame, bg="#ffffff", x=x + 90, y=y, width=20, height=20)
+        self.background_color = view.get_frame(master=settings_frame, bg="#ffffff", x=x + 90, y=y, width=20, height=20)
 
         # Окно статистики
         info_frame = LabelFrame(master=self.window, text="Параметры текста")
         view.place_obj(info_frame, x=width - 320, y=10, height=height / 6 + 10, width=310)
-        view.create_button(master=info_frame, text="Обновить", command=lambda: self.update_stat(),
+        view.create_button(master=info_frame, text="Обновить", command=lambda: self.update_statistics(),
                            x=35, y=67, height=20)
         view.create_label(master=info_frame, text="Страниц:", x=10, y=5)
         self.pages_counter = view.get_entry(master=info_frame, state="readonly", x=75, y=5, width=50)
@@ -112,13 +112,13 @@ class Window:
         self.finder = view.get_entry(master=info_frame, state="normal", x=160, y=10)
         view.create_button(master=info_frame, text="Найти все", command=lambda: self.find_text(),
                            x=150, y=40, height=20)
-        view.create_button(master=info_frame, text="Сбросить", command=lambda: self.clean_find_text(),
+        view.create_button(master=info_frame, text="Сбросить", command=lambda: self.reset_find_text(),
                            x=230, y=40, height=20)
         view.create_label(master=info_frame, text="Нашлось слов: ", x=165, y=65)
-        self.world_counter = view.get_entry(master=info_frame, x=255, y=67, state="readonly", width=25)
+        self.word_counter = view.get_entry(master=info_frame, x=255, y=67, state="readonly", width=25)
 
         # Окно ввода текста
-        self.text = Text(master=self.window, undo=True, font=self.get_font(), wrap=WORD)
+        self.text = Text(master=self.window, undo=True, font=self.get_font_style(), wrap=WORD)
         view.place_obj(self.text, x=10, y=height / 5 + 10, height=height * 4 / 5 - 40, width=width - 35)
         scroll_text_ver = Scrollbar(master=self.window, orient="vertical", command=self.text.yview)
         view.place_obj(scroll_text_ver, x=775, y=height / 5 + 10, height=height * 4 / 5 - 40)
@@ -130,8 +130,8 @@ class Window:
         view.create_bind(self.text, "<Control-d>", lambda _: self.delete_file())
 
         # Установка стартовых значений
-        self.change_file_name()
-        self.update_stat()
+        self.update_window_title()
+        self.update_statistics()
 
     def show(self):
         self.window.mainloop()
@@ -141,12 +141,12 @@ class Window:
         try:
             self.pages = model.check_and_open_file(file_path)
             self.page_num.config(from_=1, to=len(self.pages))
-            page_numb = int(self.page_num.get()) - 1
+            page_num = int(self.page_num.get()) - 1
             self.text.delete(1.0, END)
             self.curr_file = file_path
-            self.change_file_name(file_path.split("/")[-1])
-            self.text.insert(INSERT, self.pages[page_numb])
-            self.update_stat()
+            self.update_window_title(file_path.split("/")[-1])
+            self.text.insert(INSERT, self.pages[page_num])
+            self.update_statistics()
         except FileNotFoundError as e:
             if str(e) == "":
                 return
@@ -167,7 +167,7 @@ class Window:
         if file_path == "":
             return
         self.curr_file = file_path
-        self.change_file_name(file_path.split("/")[-1])
+        self.update_window_title(file_path.split("/")[-1])
         model.save_file(self.curr_file, self.text.get(1.0, END))
 
     def delete_file(self):
@@ -177,35 +177,33 @@ class Window:
         model.delete_file(self.curr_file)
         self.curr_file = None
         self.text.delete(1.0, END)
-        self.change_file_name()
+        self.update_window_title()
         self.page_num.config(from_=0, to=0)
 
-    def change_file_name(self, new_name=None):
+    def update_window_title(self, new_name=None):
         if new_name is None:
             self.window.title("2M NotePad")
         else:
             self.window.title(f"2M NotePad ― {new_name}")
 
     def change_page(self):
-        # todo здесь должно происходить сохранение тегов в список общий
         try:
             new_page_num = int(self.page_num.get()) - 1
         except ValueError:
             return
         self.text.delete(1.0, END)
-        self.change_align(self.global_tags["align"])
+        self.change_alignment(self.global_tags["align"])
         self.text.insert(INSERT, self.pages[new_page_num])
-        self.update_stat()
-        self.clean_find_text()
-        # todo здесь нужен метод, который будет применять теги все
+        self.update_statistics()
+        self.reset_find_text()
 
-    def change_align(self, align):
-        self.text.tag_configure("align", justify=align)
+    def change_alignment(self, alignment):
+        self.text.tag_configure("align", justify=alignment)
         self.text.insert(1.0, " ")
         self.text.tag_add("align", "1.0", "end")
-        self.global_tags["align"] = align
+        self.global_tags["align"] = alignment
 
-    def update_stat(self):
+    def update_statistics(self):
         page_count = max(len(self.pages), 1)
         lines_count = self.text.count("0.0", "end", "displaylines")[0]
         letters_count = len(self.text.get(1.0, END))
@@ -222,7 +220,7 @@ class Window:
             entry.config(state="readonly")
 
     def find_text(self):
-        self.clean_highlighted_text()
+        self.clear_highlighted_text()
         prev_pos = "1.0"
         count = StringVar()
         str_find = self.finder.get()
@@ -239,41 +237,41 @@ class Window:
             self.text.tag_add(f"search{finder_tag_version}", new_pos, f"{new_pos} + {count.get()}c")
             prev_pos = model.shift_pos(new_pos, count.get())
             counter += 1
-        self.update_entry(self.world_counter, counter)
+        self.update_entry(self.word_counter, counter)
 
-    def clean_find_text(self):
-        self.update_entry(self.world_counter, "")
+    def reset_find_text(self):
+        self.update_entry(self.word_counter, "")
         self.update_entry(self.finder, "", block=False)
-        self.clean_highlighted_text()
+        self.clear_highlighted_text()
         self.global_tags['finder'] = 0
 
-    def clean_highlighted_text(self):
+    def clear_highlighted_text(self):
         self.text.tag_configure(f"search{self.global_tags['finder']}", background="#ffffff")
 
-    def stylize_text(self, underline=False, style=NORMAL, type="", size=""):
-        if type == "":
-            type = self.font_type.get()
-        if size == "":
-            size = self.font_size.get()
+    def stylize_text(self, underline=False, style=NORMAL, font_type="", font_size=""):
+        if font_type == "":
+            font_type = self.font_type.get()
+        if font_size == "":
+            font_size = self.font_size.get()
         tag_name = self.global_tags["format"] + 1
-        self.text.tag_config(tag_name, font=(type, size, style), underline=underline)
+        self.text.tag_config(tag_name, font=(font_type, font_size, style), underline=underline)
         self.text.tag_add(tag_name, "sel.first", "sel.last")
         self.global_tags["format"] += 1
 
-    def get_font(self, style=NORMAL, type="", size=""):
-        if type == "":
-            type = self.font_type.get()
-        if size == "":
-            size = self.font_size.get()
-        return type, size, style
+    def get_font_style(self, style=NORMAL, font_type="", font_size=""):
+        if font_type == "":
+            font_type = self.font_type.get()
+        if font_size == "":
+            font_size = self.font_size.get()
+        return font_type, font_size, style
 
-    def undo(self):
+    def undo_action(self):
         try:
             self.text.edit_undo()
         except TclError:
             pass
 
-    def redo(self):
+    def redo_action(self):
         try:
             self.text.edit_redo()
         except TclError:
@@ -284,7 +282,7 @@ class Window:
         self.text_color.config(bg=hx)
         self.text.config(fg=hx)
 
-    def choose_back_color(self):
+    def choose_background_color(self):
         (rgb, hx) = colorchooser.askcolor()
-        self.back_color.config(bg=hx)
+        self.background_color.config(bg=hx)
         self.text.config(bg=hx)
