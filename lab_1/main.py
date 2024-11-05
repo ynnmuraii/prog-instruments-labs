@@ -1,5 +1,4 @@
-from tkinter import *
-from tkinter import messagebox, filedialog, colorchooser, font
+from tkinter import Tk, Menu, LabelFrame, filedialog, messagebox, colorchooser, font, Text, Scrollbar, StringVar, END, INSERT, WORD
 from _tkinter import TclError
 import model
 import view
