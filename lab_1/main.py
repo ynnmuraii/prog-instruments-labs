@@ -26,9 +26,11 @@ class Window:
         self.main_menu = Menu(master=self.window)
         view.config_main_menu(self.window, self.main_menu)
         self.file_menu = Menu(master=self.main_menu, tearoff=0)
-        view.config_file_menu(self.file_menu, self.main_menu,
-                              {"Открыть": self.open_file, "Сохранить": self.save_file,
-                               "Сохранить как": self.save_file_as, "Удалить": self.delete_file})
+        view.config_file_menu(
+            self.file_menu, self.main_menu,
+            {"Открыть": self.open_file, "Сохранить": self.save_file,
+             "Сохранить как": self.save_file_as, "Удалить": self.delete_file}
+        )
 
         # Окно настроек
         settings_frame = LabelFrame(master=self.window, text="Настройки текста")
@@ -74,11 +76,12 @@ class Window:
                                          state="readonly", command=self.change_page)
         
         # Блок шрифта
-        self.font_type = view.get_combobox(master=settings_frame,
-                                           values=FONTS, state="readonly",
-                                           x=10, y=10, current=2)
-        self.font_size = view.get_combobox(master=settings_frame, values=list(range(10, 61, 4)),
-                                           x=160, y=10, width=40, current=3, state="readonly")
+        self.font_type = view.get_combobox(
+            master=settings_frame, values=FONTS, state="readonly", x=10, y=10, current=2
+        )
+        self.font_size = view.get_combobox(
+            master=settings_frame, values=list(range(10, 61, 4)), x=160, y=10, width=40, current=3, state="readonly"
+        )
         view.create_button(master=settings_frame, text="Применить",
                            command=lambda: self.text.config(font=self.get_font()),
                            x=210, y=10, height=20, width=80)
@@ -129,7 +132,6 @@ class Window:
         # Установка стартовых значений
         self.change_file_name()
         self.update_stat()
-        
 
     def show(self):
         self.window.mainloop()
