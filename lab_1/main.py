@@ -8,9 +8,7 @@ FONTS = ["arial", "arial black", "calibri", "comic sans ms", "courier new", "tim
 
 class Window:
     def __init__(self):
-        """ Инициализация рабочего окна """
-
-        # Инициализация окна
+        """Инициализация рабочего окна и настройка интерфейса."""
         self.window = Tk()
         self.window.title("2M NotePad")
         width = 800
@@ -134,9 +132,11 @@ class Window:
         self.update_statistics()
 
     def show(self):
+        """Запуск главного цикла интерфейса."""
         self.window.mainloop()
 
     def open_file(self):
+        """Открытие файла и загрузка его содержимого в текстовое поле."""
         file_path = filedialog.askopenfilename()
         try:
             self.pages = model.check_and_open_file(file_path)
@@ -157,12 +157,14 @@ class Window:
                 return
 
     def save_file(self):
+        """Сохранение текущего файла. Если файл новый, вызывает метод сохранения под новым именем."""
         if self.curr_file is None:
             self.save_file_as()
             return
         model.save_file(self.curr_file, self.text.get(1.0, END))
 
     def save_file_as(self):
+        """Сохранение файла под новым именем, запрашивая путь у пользователя."""
         file_path = filedialog.asksaveasfilename()
         if file_path == "":
             return
@@ -171,6 +173,7 @@ class Window:
         model.save_file(self.curr_file, self.text.get(1.0, END))
 
     def delete_file(self):
+        """Удаление текущего файла и сброс текстового поля."""
         if self.curr_file is None:
             messagebox.showerror("Ошибка файла", "Файла не существует")
             return
@@ -181,12 +184,14 @@ class Window:
         self.page_num.config(from_=0, to=0)
 
     def update_window_title(self, new_name=None):
+        """Обновление заголовка окна с именем файла или базовым названием."""
         if new_name is None:
             self.window.title("2M NotePad")
         else:
             self.window.title(f"2M NotePad ― {new_name}")
 
     def change_page(self):
+        """Изменение текущей страницы текста и обновление интерфейса."""
         try:
             new_page_num = int(self.page_num.get()) - 1
         except ValueError:
@@ -198,12 +203,14 @@ class Window:
         self.reset_find_text()
 
     def change_alignment(self, alignment):
+        """Изменение выравнивания текста в соответствии с выбранным стилем."""
         self.text.tag_configure("align", justify=alignment)
         self.text.insert(1.0, " ")
         self.text.tag_add("align", "1.0", "end")
         self.global_tags["align"] = alignment
 
     def update_statistics(self):
+        """Обновление статистики текста: количество страниц, строк и символов."""
         page_count = max(len(self.pages), 1)
         lines_count = self.text.count("0.0", "end", "displaylines")[0]
         letters_count = len(self.text.get(1.0, END))
@@ -213,6 +220,7 @@ class Window:
 
     @staticmethod
     def update_entry(entry, count, block=True):
+        """Обновление поля ввода с заданным значением и опциональной блокировкой."""
         entry.config(state="normal")
         entry.delete(0, END)
         entry.insert(0, count)
@@ -220,6 +228,7 @@ class Window:
             entry.config(state="readonly")
 
     def find_text(self):
+        """Поиск и выделение всех вхождений текста, введенного пользователем."""
         self.clear_highlighted_text()
         prev_pos = "1.0"
         count = StringVar()
@@ -240,15 +249,18 @@ class Window:
         self.update_entry(self.word_counter, counter)
 
     def reset_find_text(self):
+        """Сброс выделения найденного текста и очистка поля ввода поиска."""
         self.update_entry(self.word_counter, "")
         self.update_entry(self.finder, "", block=False)
         self.clear_highlighted_text()
         self.global_tags['finder'] = 0
 
     def clear_highlighted_text(self):
+        """Очистка подсветки выделенного текста."""
         self.text.tag_configure(f"search{self.global_tags['finder']}", background="#ffffff")
 
     def stylize_text(self, underline=False, style=NORMAL, font_type="", font_size=""):
+        """Применение стиля к выделенному тексту."""
         if font_type == "":
             font_type = self.font_type.get()
         if font_size == "":
@@ -259,6 +271,7 @@ class Window:
         self.global_tags["format"] += 1
 
     def get_font_style(self, style=NORMAL, font_type="", font_size=""):
+        """Получение текущего стиля шрифта для текста."""
         if font_type == "":
             font_type = self.font_type.get()
         if font_size == "":
@@ -266,23 +279,27 @@ class Window:
         return font_type, font_size, style
 
     def undo_action(self):
+        """Отмена последнего действия пользователя."""
         try:
             self.text.edit_undo()
         except TclError:
             pass
 
     def redo_action(self):
+        """Повтор последнего отмененного действия."""
         try:
             self.text.edit_redo()
         except TclError:
             pass
 
     def choose_text_color(self):
+        """Выбор и применение цвета текста."""
         (rgb, hx) = colorchooser.askcolor()
         self.text_color.config(bg=hx)
         self.text.config(fg=hx)
 
     def choose_background_color(self):
+        """Выбор и применение цвета фона текста."""
         (rgb, hx) = colorchooser.askcolor()
         self.background_color.config(bg=hx)
         self.text.config(bg=hx)
