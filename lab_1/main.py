@@ -1,8 +1,11 @@
-from tkinter import Tk, Menu, LabelFrame, filedialog, messagebox, colorchooser, font, Text, Scrollbar, StringVar, END, INSERT, WORD
-from _tkinter import TclError
-from typing import Optional
 import model
 import view
+from tkinter import (
+    Tk, Menu, LabelFrame, filedialog, messagebox, colorchooser, font,
+    Text, Scrollbar, StringVar, END, INSERT, WORD
+)
+from _tkinter import TclError
+from typing import Optional
 
 # Константы для конфигурации окна и виджетов
 WINDOW_WIDTH = 800
